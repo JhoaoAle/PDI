@@ -224,15 +224,42 @@ Evaluar el efecto de distintas técnicas de ecualización y transformaciones lin
 
 **4.** Ejecutar la ecualización local del histograma de una imagen. Debe mostrar la imagen original, la imagen ecualizada y los histogramas de las imágenes.
 
-**5.** Crear un programa basado en ciclos que permita adelantar la ecualización local del histograma de una imagen. Utilice la imagen “Piano.pgm” con el fin de observar los efectos causados por la ecualización (se recomienda ajustar Amin = 0.5 y Amax = 2.5).
+**5.** Crear un programa basado en ciclos que permita adelantar la ecualización local del histograma de una imagen. Utilice la imagen “Piano.bmp” con el fin de observar los efectos causados por la ecualización (se recomienda ajustar Amin = 0.5 y Amax = 2.5).
 
 **6.** Crear una función basada en ciclos, que permita realizar las principales operaciones lógicas entre dos imágenes. Verificar el algoritmo con las imágenes «CuadroBinGrande.pgm» y «CuadroBinChico.pgm».
 
 ### Objetivo
+Documentar e implementar las técnicas pedidas en el Taller 5: obtener los 8‑vecinos de un píxel, aplicar ecualización local (biblioteca y basada en ciclos) y realizar operaciones lógicas entre imágenes binarias. Verificar los algoritmos con las imágenes provistas y mostrar resultados visuales e histogramas.
+
 ### Algoritmos utilizados
+- Extracción de 8‑vecinos: recorrido local 3×3 con manejo de fronteras (padding implícito con valor 0).
+- Ecualización local con biblioteca: CLAHE (OpenCV) para realce local y comparación de histogramas.
+- Ecualización local basada en ciclos: ventana centrada (radio r), cálculo de media local y ajuste por factor Amin / Amax (implementación por píxel).
+- Operaciones lógicas entre imágenes: AND, OR, XOR implementadas con operaciones booleanas de NumPy sobre imágenes binarias.
+
 ### Consideraciones o explicación de la técnica utilizada
-### Imágenes generadas.
-### Análisis y conclusiones.
+- Manejo de fronteras: al solicitar vecinos en los bordes se devuelve 0 para posiciones fuera de la imagen (evita índices inválidos).
+- Tipos y rangos: las operaciones sobre intensidades usan enteros 0–255; en la implementación por ciclos se trabaja en float para evitar saturación prematura y luego se reconvierte a uint8 con clipping.
+- Parámetros de ecualización local: Amin < 1 aproxima los valores hacia la media local (reducción de contraste local), Amin > 1 o Amax > 1 permite aumentar contrastes locales; en la versión actual Amin=0.5 se usa por defecto (ver nota: Amax no se utiliza en la implementación mostrada y puede integrarse para efecto de realce).
+- Rendimiento: la versión basada en ciclos es didáctica pero lenta para imágenes grandes; CLAHE y operaciones vectorizadas son más eficientes.
+
+### Imágenes generadas
+- (Comparación: imagen original — CLAHE — histograma comparativo entre original y CLAHE)
+![Hist_vs_Clahe](outputs_workshop_5/histogram_clahe.png)
+
+- (Resultado de la ecualización local por ciclos junto a la imagen original)
+![Local equalization](outputs_workshop_5/local_eq.png)
+
+- (Imágenes resultantes de AND, OR y XOR entre CuadroBinGrande.pgm y CuadroBinChico.pgm)
+![Logic gates](outputs_workshop_5/logic_gates.png)  
+  
+
+### Análisis y conclusiones
+- CLAHE mejora el contraste local y redistribuye las frecuencias en el histograma hacia una forma más uniforme, haciendo más visibles detalles oscuros y brillantes sin amplificar ruido de forma global.
+
+- La ecualización local implementada por ciclos (Amin=0.5) aproxima intensidades a la media local, produciendo una reducción del contraste local (efecto de suavizado/control); cambiando Amin/Amax se obtiene desde atenuación hasta realce de contrastes locales.
+
+- Las operaciones lógicas verifican relación espacial entre máscaras binarias: AND muestra la intersección, OR la unión y XOR la diferencia simétrica; sirven para validar correspondencia y solapamiento entre formas binarias.
 
 ## Taller 6
 
