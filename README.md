@@ -261,7 +261,7 @@ Documentar e implementar las técnicas pedidas en el Taller 5: obtener los 8‑v
 
 - Las operaciones lógicas verifican relación espacial entre máscaras binarias: AND muestra la intersección, OR la unión y XOR la diferencia simétrica; sirven para validar correspondencia y solapamiento entre formas binarias.
 
-## Taller 6
+## Taller 6 
 
 **1.** Desarrollar una función basada en ciclos que permita aplicar filtros paso bajo de promedio a una imagen. Los argumentos de entrada son la imagen, la máscara y la salida es la imagen filtrada. Observar los resultados obtenidos al aplicar el filtro a la imagen “Anne.pgm” para las siguientes máscaras (adicionalmente 15x15, ver los filtros en las diapositivas).
 
@@ -274,10 +274,106 @@ Documentar e implementar las técnicas pedidas en el Taller 5: obtener los 8‑v
 **5.** Aplicar el filtro de la mediana a la imagen “Gwen_saltPepper.prg”, luego aplicar el filtro paso alto. Aparece la imagen con el ruido de sal y pimienta minimizado, pero con bordes bien definidos.  Posteriormente, aplicar al filtro paso alto a la imagen original y comparar los resultados.
 
 ### Objetivo
+
+Implementar y analizar filtros espaciales (paso bajo, media, mediana y paso alto) sobre imágenes en escala de grises, mediante algoritmos basados en ciclos en lenguaje C, evaluando su desempeño y efectos visuales.
+
 ### Algoritmos utilizados
+
+En este taller se emplearon los siguientes algoritmos de procesamiento espacial:
+
+F- iltro paso bajo (promedio):
+Se calcula la media de los píxeles dentro de una ventana M×M centrada en cada posición de la imagen. Este filtro atenúa variaciones abruptas y genera suavizado general.
+
+- Filtro de la media (3×3 y 5×5):
+Caso particular del filtro de promedio donde la ventana tiene tamaño fijo. Suaviza de manera más controlada y de manera proporcional al tamaño de la máscara.
+
+- Filtro de mediana (3×3 y 5×5):
+En cada ventana M×M, se ordenan los valores y se selecciona el valor central. Este filtro es especialmente eficaz eliminando ruido impulsivo (sal y pimienta) preservando los bordes mejor que los filtros de promedio.
+
+- Filtro paso alto (máscaras 3×3 y 5×5):
+Calculado mediante convolución con máscaras diseñadas para resaltar cambios bruscos de intensidad. Está orientado al realce de bordes y detalles.
+
+- Convolución 2D implementada manualmente:
+Todas las operaciones se desarrollaron usando ciclos explícitos para recorrer vecinos y aplicar las operaciones definidas por cada máscara o ventana.
+
+- Pipeline “mediana - Paso Alto”:
+Secuencia que primero elimina el ruido (especialmente impulsivo) y luego realza bordes sobre una imagen previamente limpiada.
+
 ### Consideraciones o explicación de la técnica utilizada
-### Imágenes generadas.
-### Análisis y conclusiones.
+
+- Los filtros se implementaron únicamente con estructuras iterativas, evitando funciones avanzadas de librerías para cumplir con el propósito formativo del taller.
+
+- Para manejar los bordes de la imagen se verificaron los índices de vecinos, evitando accesos fuera de los límites.
+
+- En los filtros de promedio y media, la suavización aumenta proporcionalmente al tamaño de la ventana; ventanas más grandes producen mayor suavizado y mayor pérdida de detalle.
+
+- El filtro de mediana requiere recolectar los valores de la ventana, ordenarlos y seleccionar el valor medio, método especialmente adecuado para ruido impulsivo.
+
+- El filtro paso alto se basa en combinaciones lineales de los vecinos con valores positivos y negativos, lo que resalta las regiones donde existen cambios abruptos de intensidad.
+
+- Para evitar saturaciones, los valores resultantes del paso alto se normalizan al rango [0, 255].
+
+- El encadenamiento mediana → paso alto actúa primero reduciendo ruido y posteriormente reforzando contornos, lo cual evita que el paso alto amplifique el ruido presente.
+
+### Imágenes generadas
+
+Comparación entre diferentes máscaras para filtrado de paso bajo de la media:
+
+![](outputs_workshop_6/output.png)
+
+#### 1. Filtro paso bajo de la media
+
+Media 3×3
+
+![](outputs_workshop_6/kirkjufell_media3.png)
+
+
+Media 5×5
+![](outputs_workshop_6/kirkjufell_media5.png)
+
+
+#### 2. Filtro paso bajo de la mediana
+Mediana 3×3
+![](outputs_workshop_6/kirkjufell_mediana3.png)
+
+Mediana 5×5
+![](outputs_workshop_6/kirkjufell_mediana5.png)
+
+
+#### 3. Filtros paso alto
+Paso alto 3×3
+![](outputs_workshop_6/kirkjufell_paso_alto3.png)
+
+
+Paso alto 5×5
+![](outputs_workshop_6/kirkjufell_paso_alto5.png)
+
+
+#### 5. Comparación paso alto directo vs. filtrado
+![](outputs_workshop_6/output_median_filter_and_no_median_salt_pepper.png)
+
+
+
+### Análisis y conclusiones
+
+- Los filtros paso bajo (promedio y media) reducen la variabilidad de los niveles de gris y suavizan la imagen, pero sacrifican detalles y bordes al aumentar el tamaño la ventana.
+
+- El filtro de mediana demostró ser la herramienta más eficaz para eliminar ruido impulsivo, ya que preserva los bordes mejor que los filtros de promedio o media.
+
+- El filtro paso alto permite resaltar bordes, pero su desempeño se degrada cuando se aplica sobre imágenes con ruido, debido a que amplifica las variaciones locales e introduce artefactos.
+
+- El pipeline mediana → paso alto resultó ser la mejor combinación:
+
+    - Elimina el ruido original,
+
+    - Conserva detalles relevantes,
+
+    - Realza bordes de manera efectiva.
+
+- Aplicar paso alto directamente a imágenes ruidosas produce resultados deficientes, con bordes falsos y pérdida de legibilidad.
+
+En general, los resultados muestran que la calidad del preprocesamiento del ruido determina la calidad del realce posterior, y que la selección correcta del filtro depende del tipo de ruido presente en la imagen.
+
 
 ## Taller 7
 
@@ -287,6 +383,124 @@ Documentar e implementar las técnicas pedidas en el Taller 5: obtener los 8‑v
 **2.** Visualizar el espectro de las imágenes usando escala logarítmica.
 
 **3.** Desarrollar una función basada en ciclos, que realice la DFT en 2D usando la propiedad de separabilidad.
+
+### Objetivo
+
+l objetivo de esta práctica es:
+
+1. Implementar la **Transformada Discreta de Fourier (DFT) en 2D** utilizando bucles (`for`) sobre imágenes en escala de grises.  
+2. Visualizar el **espectro de magnitud** de las imágenes utilizando escala logarítmica, para resaltar detalles de frecuencia.  
+3. Implementar la DFT 2D usando la **propiedad de separabilidad**, realizando primero la DFT 1D por filas y luego por columnas.  
+
+Se utilizarán como imágenes de prueba: `rectOne.pgm`, `circulo.pgm` y `liraImpulsivo.pgm`.
+
+
+### Algoritmos utilizados
+
+
+#### DFT 2D directa (ciclos anidados)
+
+La DFT 2D de una imagen  f ( x , y )  de tamaño  M × N  se define como:
+
+$$F(u, v) = \sum_{x=0}^{M-1} \sum_{y=0}^{N-1} f(x, y) \, e^{- j 2 \pi \left( \frac{u x}{M} + \frac{v y}{N} \right)}$$
+
+
+**Implementación:**
+
+- Se usan 4 bucles anidados: `for u in M`, `for v in N`, `for x in M`, `for y in N`.  
+- Cada elemento  F ( u , v )  se calcula sumando la contribución de cada pixel de la imagen multiplicado por el exponencial complejo.
+
+
+#### Visualización del espectro en escala logarítmica
+
+- La magnitud de la DFT se define como  | F ( u , v ) | .  
+- Para visualizar mejor los detalles de frecuencia, se utiliza la escala logarítmica:
+
+$$
+S ( u , v )  =  \log ( 1 + | F ( u , v ) | )
+$$
+
+- Esto permite que frecuencias bajas y altas sean perceptibles en la misma imagen.  
+- Se centra la componente de baja frecuencia usando `fftshift`, colocando el cero de frecuencia en el centro.
+
+---
+
+#### DFT 2D usando separabilidad
+
+- La DFT es separable, lo que significa que se puede calcular primero la DFT 1D por filas y luego por columnas:
+
+$$
+F ( u , v )  =  \sum _{ x = 0 } ^{ M - 1 }  \left( \sum _{ y = 0 } ^{ N - 1 }  f ( x , y ) \, e ^{ - j 2 \pi v y / N } \right) e ^{ - j 2 \pi u x / M }
+$$
+
+**Algoritmo:**
+
+1. Aplicar DFT 1D a cada fila de la imagen.  
+2. Aplicar DFT 1D a cada columna del resultado anterior.  
+
+**Ventaja:** reduce la complejidad computacional en comparación con los 4 bucles anidados de la DFT directa.
+
+
+### Consideraciones o explicación de la técnica utilizada
+
+- La DFT permite transformar la representación espacial de la imagen a **frecuencia**, mostrando componentes de baja y alta frecuencia.  
+- La implementación con ciclos es **didáctica**, mostrando el cálculo explícito de cada punto de la DFT.  
+- Para imágenes grandes, la DFT directa es muy lenta; el enfoque por **separabilidad** mejora notablemente el tiempo de ejecución.  
+- La escala logarítmica es fundamental para visualizar el espectro, porque la magnitud de las frecuencias bajas domina y puede ocultar los detalles de alta frecuencia si se usa escala lineal.
+
+### Imágenes generadas
+
+
+### Análisis y conclusiones
+
+1. **DFT directa vs DFT separable:**  
+   - Ambas producen resultados idénticos en magnitud y fase.  
+   - La DFT separable es más eficiente, pues reduce la complejidad de  O ( M² N² )  a  O ( MN ( M + N ) ).
+
+2. **Visualización del espectro:**  
+   - La escala lineal muestra principalmente la componente de baja frecuencia.  
+   - La escala logarítmica permite observar mejor los detalles de alta frecuencia, especialmente en la imagen de la lira impulsiva.
+
+3. **Uso educativo de ciclos:**  
+   - Implementar DFT con ciclos anidados ayuda a comprender la fórmula y cómo cada pixel contribuye a cada frecuencia.  
+   - Para aplicaciones reales se recomienda `numpy.fft.fft2`, que es mucho más eficiente.
+
+4. **Conclusión general:**  
+   - La DFT 2D es una herramienta clave para análisis de imágenes en frecuencia.  
+   - La técnica de separabilidad y la visualización logarítmica son esenciales para eficiencia y comprensión de la estructura frecuencial.
+
+
+## Taller 8: Filtros Frecuencia
+
+**1.** Desarrollar una función basada en ciclos que permita aplicar un filtro ideal pasa bajos en 2D. Recibe como entrada la imagen original y la frecuencia de corte. Probar el algoritmo con las imágenes “rectOne.pgm”, “nebulosaLira.pgm” y “gwen-pgm” con diversas frecuencias de corte.
+
+**2.** Desarrollar una función basada en ciclos que permita aplicar un filtro Butterworth en 2D. Recibe como entrada la imagen original, la frecuencia de corte y el orden del filtro. Probar el algoritmo con las imágenes “rectOne.pgm”, “nebulosaLira.pgm” y “gwen.pgm” con diversas frecuencias de corte y diferente orden.
+
+**3.** Desarrollar una función basada en ciclos que permita aplicar un filtro Gaussian en 2D. Recibe como entrada la imagen original y la frecuencia de corte. Probar el algoritmo con las imágenes “rectOne.pgm”, “nebulosaLira.pgm” y “gwen-pgm” con diversas frecuencias de corte. 
+
+Puede usar frecuencias de corte de 20, 40 y 80. En caso de Butterworth, 2º orden.
+
+### Objetivo
+### Algoritmos utilizados
+### Consideraciones o explicación de la técnica utilizada
+### Imágenes generadas.
+### Análisis y conclusiones.
+
+## Taller 9: Segmentación
+
+**1.** Desarrollar una función basada en ciclos que permita detectar puntos aislados en una imagen. Verificar el funcionamiento con la imagen “Liraimpulsivo.pgm”. Eliminar el término promedio (1/9), ejecutar de nuevo el programa, observar y concluir.
+
+**2.** Desarrollar una función basada en ciclos que permita detectar líneas horizontales, verticales y diagonales en una imagen. Verificar el funcionamiento con la imagen “FormasRuido.pgm”. Establecer un umbral apropiado para visualizar solo trazos deseados.
+
+**3.** Desarrollar una función basada en ciclos que permita detectar bordes en una imagen usando la máscara Prewitt. Verificar el funcionamiento con la imagen “Gwen.pgm” y otras imágenes..
+
+**4.** Desarrollar una función basada en ciclos que permita detectar bordes en una imagen usando la máscara Sobel. Verificar el funcionamiento con las mismas imágenes del punto anterior..
+
+**5.** Desarrollar una función basada en ciclos que permita detectar bordes en una imagen usando la máscara Laplaciano. Verificar el funcionamiento con la imagen “Gwen.pgm” y otras imágenes.
+
+**6.** Desarrollar una función basada en ciclos que permita detectar bordes en una imagen usando el algoritmo de Marr Hildreth. Verificar el funcionamiento con las mismas imágenes del punto anterior.
+
+**7.** Desarrollar una función basada en ciclos que permita detectar bordes en una imagen usando la máscara Canny. Verificar el funcionamiento con la imagen “Gwen.pgm” y otras imágenes. Utilizar sigma = 5.
 
 ### Objetivo
 ### Algoritmos utilizados
