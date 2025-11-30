@@ -450,6 +450,9 @@ $$
 
 ### Imágenes generadas
 
+![](spectre_dft_1.png)
+![](spectre_dft_2.png)
+
 
 ### Análisis y conclusiones
 
@@ -480,11 +483,59 @@ $$
 
 Puede usar frecuencias de corte de 20, 40 y 80. En caso de Butterworth, 2º orden.
 
+**4.** Desarrollar una función basada en ciclos que permita aplicar un filtro ideal pasa altos en 2D. Recibe como entrada la imagen original y la frecuencia de corte. Probar el algoritmo con las imágenes “rectOne.pgm”, “nebulosaLira.pgm” y “gwen-pgm” con diversas frecuencias de corte.
+
+**5.** Desarrollar una función basada en ciclos que permita aplicar un filtro pasa altos Butterworth en 2D. Recibe como entrada la imagen original, la frecuencia de corte y el orden del filtro. Probar el algoritmo con las imágenes “rectOne.pgm”, “nebulosaLira.pgm” y “gwen.pgm” con diversas frecuencias de corte y diferente orden.
+
+**6.** Desarrollar una función basada en ciclos que permita aplicar un filtro pasa altos Gaussian en 2D. Recibe como entrada la imagen original y la frecuencia de corte. Probar el algoritmo con las imágenes “rectOne.pgm”, “nebulosaLira.pgm” y “gwen-pgm” con diversas frecuencias de corte.
+Puede usar frecuencias de corte de 20, 40 y 80. En caso de Butterworth, 2º o 4º orden.
+
 ### Objetivo
+
+El objetivo de este taller es implementar y analizar filtros ideales, Butterworth y Gaussianos en dos dimensiones dentro del dominio de la frecuencia. Estos filtros se aplican tanto en su versión pasa bajos como pasa altos, observando su efecto sobre imágenes de prueba y comparando su desempeño con distintas frecuencias de corte y órdenes (en el caso de Butterworth).
+
 ### Algoritmos utilizados
+
+1. **Transformada de Fourier 2D (FFT)**
+   - Se utiliza para convertir la imagen del dominio espacial al dominio de la frecuencia, permitiendo aplicar filtros multiplicativos.
+
+2. **Filtros Ideales (LPF y HPF)**
+   - Definidos por una función binaria, donde las frecuencias dentro del radio de corte se mantienen y las demás se anulan (o viceversa para HPF).
+
+3. **Filtros Butterworth (LPF y HPF)**
+   - Suavizan la transición entre frecuencias permitidas y rechazadas.
+   - Incluyen un parámetro de orden que afecta la pendiente del filtro.
+
+4. **Filtros Gaussianos (LPF y HPF)**
+   - Definen una transición suave basada en una función exponencial.
+   - No presentan artefactos de ringing como los filtros ideales.
+
+5. **Transformada Inversa de Fourier**
+   - Permite llevar los resultados filtrados nuevamente al dominio espacial.
+
+
 ### Consideraciones o explicación de la técnica utilizada
-### Imágenes generadas.
-### Análisis y conclusiones.
+
+- Para cada filtro se construyó una **máscara H(u, v)** basada en ciclos usando las fórmulas analíticas correspondientes.
+- La imagen se centra en frecuencia usando `fftshift`, se multiplica por la máscara, y luego se invierte la transformada.
+- Se probaron distintas **frecuencias de corte (20, 40, 80)** para analizar el efecto del tamaño del filtro.
+- En el filtro Butterworth se emplearon órdenes **n = 2 y n = 4**, permitiendo observar cómo aumenta la selectividad conforme se incrementa el orden.
+- Las imágenes utilizadas muestran diferentes características (bordes definidos, texturas suaves, ruido), permitiendo evaluar la respuesta de cada filtro.
+
+### Imágenes generadas
+![](outputs_workshop_8/case_rect_1.png)
+![](outputs_workshop_8/case_kirk.png)
+
+
+### Análisis y conclusiones
+
+- Los **filtros ideales** producen resultados fuertes y definidos, pero generan **artefactos de ringing** debido a la discontinuidad en el dominio de la frecuencia.
+- Los **filtros Butterworth** suavizan la transición, y al aumentar el orden se comportan de forma más parecida al filtro ideal, pero sin el ringing tan pronunciado.
+- Los **filtros Gaussianos** resultan ser los más suaves y naturales, sin artefactos visibles, lo que los hace adecuados para aplicaciones donde se desea minimizar el ruido sin degradar excesivamente la imagen.
+- A frecuencias de corte bajas (D0 = 20), todos los filtros realizan un suavizado agresivo. A valores altos (D0 = 80), la imagen preserva más detalles.
+- Los filtros pasa altos son útiles para resaltar bordes y detalles finos, especialmente los Gaussianos por su suavidad.
+
+En general, la elección del filtro depende del balance entre suavidad, preservación de detalles y presencia de artefactos. Los Gaussianos suelen ofrecer la mejor relación calidad–suavidad, mientras que los Ideales son útiles para análisis pero no tanto para uso práctico.
 
 ## Taller 9: Segmentación
 
@@ -503,7 +554,56 @@ Puede usar frecuencias de corte de 20, 40 y 80. En caso de Butterworth, 2º orde
 **7.** Desarrollar una función basada en ciclos que permita detectar bordes en una imagen usando la máscara Canny. Verificar el funcionamiento con la imagen “Gwen.pgm” y otras imágenes. Utilizar sigma = 5.
 
 ### Objetivo
+
+Implementar y analizar diferentes algoritmos basados en convolución y
+operaciones locales para la detección de puntos aislados, líneas y
+bordes en imágenes digitales utilizando ciclos y máscaras clásicas en
+procesamiento de imágenes.
+
 ### Algoritmos utilizados
+
+1.  **Detección de puntos aislados**
+    -   Basada en una máscara de realce que resalta valores que difieren significativamente del vecindario.
+    -   Se realizaron pruebas con y sin el término promedio (1/9) sobre la imagen *Liraimpulsivo.pgm*.
+2.  **Detección de líneas horizontales, verticales y diagonales**
+    -   Implementación mediante máscaras específicas para cada orientación.
+    -   Aplicada a la imagen *FormasRuido.pgm* con ajuste manual de umbral.
+3.  **Detección de bordes con Prewitt**
+    -   Uso de máscaras (G_x) y (G_y) mediante iteraciones explícitas.
+    -   Probada con *Gwen.pgm*
+4.  **Detección de bordes con Sobel**
+    -   Variante más sensible que Prewitt con pesos adicionales.
+    -   Probada con las mismas imágenes que el punto anterior.
+5.  **Detección de bordes con Laplaciano**
+    -   Método de segunda derivada para resaltar cambios abruptos.
+    -   Probado con *Gwen.pgm*.
+6.  **Detección de bordes con Marr--Hildreth**
+    -   Suavizado con Gaussiana y posterior Laplaciano del Gaussiano (LoG).
+    -   Se detectan cruces por cero.
+    -   Probado con *Gwen.pgm*.
+7.  **Detección de bordes con Canny**
+    -   Implementación basada en ciclos: suavizado gaussiano, gradiente, supresión no máxima y umbral con histéresis.
+    -   Se utilizó sigma = 5.
+    -   Probado con varias imágenes.
+
+### Imágenes generadas
+![](outputs_workshop_9/output.png)
+
+
 ### Consideraciones o explicación de la técnica utilizada
-### Imágenes generadas.
-### Análisis y conclusiones.
+
+-   Todos los algoritmos fueron implementados mediante ciclos anidados, evitando el uso de funciones de convolución externas, para comprender el proceso interno pixel por pixel.
+-   Para cada técnica se manejaron bordes mediante padding controlado o ignorando píxeles exteriores.
+-   Se utilizaron máscaras clásicas normalizadas donde corresponde, y umbrales ajustados experimentalmente.
+-   En el caso de Canny y Marr--Hildreth, se aplicaron operaciones más complejas como suavizado previo, cálculo de gradiente y detección de cruces por cero.
+
+### Análisis y conclusiones
+
+-   En la detección de puntos aislados, eliminar el término promedio aumenta drásticamente la sensibilidad al ruido, generando más falsos positivos. El uso del promedio estabiliza la respuesta.
+-   En la imagen *FormasRuido.pgm*, la detección de líneas depende fuertemente del umbral; valores demasiado bajos introducen ruido y valores muy altos eliminan trazos válidos.
+-   Prewitt y Sobel producen resultados similares, aunque Sobel ofrece mayor énfasis en bordes fuertes debido a su ponderación.
+-   El Laplaciano detecta bordes más delgados pero también es muy sensible al ruido.
+-   Marr--Hildreth genera bordes continuos y suaves gracias al filtrado Gaussian previo, aunque puede generar doble borde.
+-   Canny fue el método más robusto: produce bordes definidos, continuos y con poco ruido, especialmente con sigma = 5.
+-   En conjunto, los algoritmos permiten observar cómo diferentes aproximaciones a la derivada (primera o segunda) afectan la detección de bordes y la sensibilidad al ruido.
+
